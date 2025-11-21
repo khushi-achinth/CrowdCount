@@ -165,7 +165,7 @@ while True:
         print("Drawing mode: Draw new zones with mouse")
     elif key == ord('p'):
         paused = not paused
-        print("Video paused" if paused else "Video resumed")
+        print("Video paused." if paused else "Video resumed.")
 
 cap.release()
 cv2.destroyAllWindows()
