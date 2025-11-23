@@ -3,6 +3,9 @@ import json
 import cv2
 
 def rect_sorted(x1, y1, x2, y2):
+    """
+    Return (x1,y1,x2,y2) with sorted coordinates (top-left, bottom-right).
+    """
     xs = sorted([int(x1), int(x2)])
     ys = sorted([int(y1), int(y2)])
     return xs[0], ys[0], xs[1], ys[1]
@@ -55,6 +58,11 @@ class ZoneManager:
     def mouse_callback(event, x, y, flags, param):
         """
         OpenCV mouse callback. param should be ZoneManager instance.
+
+        Behavior change: when creating a NEW zone (not editing), the user is
+        prompted to type the integer ID they want to assign to the zone.
+        If the ID already exists, user is asked whether to overwrite.
+        Invalid inputs cancel creation.
         """
         zm = param
         if zm.mode == "draw" or (zm.mode == "edit" and zm.editing_zone):
@@ -78,10 +86,39 @@ class ZoneManager:
                     zm.editing_zone = False
                     zm.mode = "draw"
                 else:
-                    # create new zone with next numeric ID
-                    new_id = max(zm.rois.keys(), default=0) + 1
-                    zm.rois[new_id] = [x1, y1, x2, y2]
-                    print(f"Added zone ID: {new_id}")
+                    # NEW zone creation: ask user for the desired ID (int)
+                    try:
+                        id_str = input("Enter integer ID for this zone (leave blank to cancel): ").strip()
+                    except EOFError:
+                        # in some environments input may raise EOFError; cancel in that case
+                        print("No input available — cancelling zone creation.")
+                        return
+
+                    if id_str == "":
+                        print("Zone creation cancelled.")
+                        return
+
+                    # validate integer
+                    try:
+                        zone_id = int(id_str)
+                    except ValueError:
+                        print("Invalid ID (must be integer). Zone creation cancelled.")
+                        return
+
+                    # if exists, ask whether to overwrite
+                    if zone_id in zm.rois:
+                        try:
+                            resp = input(f"Zone ID {zone_id} already exists. Overwrite? (y/n): ").strip().lower()
+                        except EOFError:
+                            print("No input available — cancelling zone creation.")
+                            return
+                        if resp not in ("y", "yes"):
+                            print("Zone creation cancelled (did not overwrite).")
+                            return
+
+                    # save the zone with the user-provided id
+                    zm.rois[zone_id] = [x1, y1, x2, y2]
+                    print(f"Added/Updated zone ID: {zone_id}")
 
     def draw_zones(self, frame):
         """
