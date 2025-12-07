@@ -4,7 +4,7 @@ from camera_feed import get_camera_frame
 from zones import load_zones, save_zones, ZoneManager
 
 def main():
-    window_name = "webcam"
+    window_name = "Webcam"
     cv2.namedWindow(window_name)
 
     # Load zones and create manager
@@ -15,14 +15,14 @@ def main():
     cv2.setMouseCallback(window_name, ZoneManager.mouse_callback, zm)
 
     print("""
-Controls:
-- Draw zones with mouse → new numeric ID assigned automatically
-- Press 's' to save all to zones.json
-- Press 'q' to quit
-- Press 'e' to edit a zone (enter zone ID and redraw it)
-- Press 'd' to delete a zone (enter zone ID to delete)
-- Press 'n' to return to drawing mode
-""")
+    Controls:
+    - Draw zones with mouse → new numeric ID assigned automatically
+    - Press 's' to save all to zones.json
+    - Press 'q' to quit
+    - Press 'e' to edit a zone (enter zone ID and redraw it)
+    - Press 'd' to delete a zone (enter zone ID to delete)
+    - Press 'n' to return to drawing mode
+    """)
 
     try:
         for ret, frame in get_camera_frame(0):
