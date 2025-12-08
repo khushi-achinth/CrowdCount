@@ -6,14 +6,10 @@ from ultralytics import YOLO
 
 # ---------------- CONFIG ----------------
 YOLO_MODEL = "yolov8n.pt"
-VIDEO_PATH = "video.mp4"     # change if needed
+VIDEO_PATH = "video.mp4"
 CONF_THRESH = 0.6
-
 IMG_RESIZE = (640, 360)
 ZONES_FILE = "zones.npy"
-
-MAX_DISAPPEARED = 30
-MAX_DISTANCE = 80
 # --------------------------------------
 
 
@@ -42,65 +38,6 @@ def save_zones(zones):
     print("Zones saved")
 
 
-# ---------------- CENTROID TRACKER ----------------
-class CentroidTracker:
-    def __init__(self, max_disappeared=MAX_DISAPPEARED, max_distance=MAX_DISTANCE):
-        self.next_id = 1
-        self.objects = {}
-        self.max_disappeared = max_disappeared
-        self.max_distance = max_distance
-
-    def update(self, detections):
-        rects = [tuple(d[:4]) for d in detections]
-        centroids = [xyxy_to_centroid(r) for r in rects]
-
-        if not self.objects:
-            for i, r in enumerate(rects):
-                self.objects[self.next_id] = {"bbox": r, "centroid": centroids[i], "gone": 0}
-                self.next_id += 1
-        else:
-            obj_ids = list(self.objects.keys())
-            obj_centroids = [self.objects[o]["centroid"] for o in obj_ids]
-
-            if centroids:
-                D = np.linalg.norm(
-                    np.array(obj_centroids)[:, None] -
-                    np.array(centroids)[None, :], axis=2
-                )
-                rows = D.min(axis=1).argsort()
-                cols = D.argmin(axis=1)[rows]
-
-                used_r, used_c = set(), set()
-                for r, c in zip(rows, cols):
-                    if r in used_r or c in used_c:
-                        continue
-                    if D[r, c] > self.max_distance:
-                        continue
-                    oid = obj_ids[r]
-                    self.objects[oid]["bbox"] = rects[c]
-                    self.objects[oid]["centroid"] = centroids[c]
-                    self.objects[oid]["gone"] = 0
-                    used_r.add(r)
-                    used_c.add(c)
-
-                for i, oid in enumerate(obj_ids):
-                    if i not in used_r:
-                        self.objects[oid]["gone"] += 1
-                        if self.objects[oid]["gone"] > self.max_disappeared:
-                            del self.objects[oid]
-
-                for j, r in enumerate(rects):
-                    if j not in used_c:
-                        self.objects[self.next_id] = {
-                            "bbox": r,
-                            "centroid": centroids[j],
-                            "gone": 0
-                        }
-                        self.next_id += 1
-
-        return [{"id": oid, **v} for oid, v in self.objects.items()]
-
-
 # ---------------- MAIN ----------------
 def main():
     model = YOLO(YOLO_MODEL)
@@ -112,7 +49,6 @@ def main():
         return
 
     clahe = cv2.createCLAHE(2.0, (8, 8))
-    tracker = CentroidTracker()
 
     counts = defaultdict(int)
     counted = set()
@@ -152,8 +88,8 @@ q - quit
         frame = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
 
         display = frame.copy()
-
         inf = cv2.resize(frame, IMG_RESIZE)
+
         sx = frame.shape[1] / IMG_RESIZE[0]
         sy = frame.shape[0] / IMG_RESIZE[1]
 
@@ -166,79 +102,68 @@ q - quit
         if drawing and len(current_pts) > 1:
             cv2.polylines(display, [np.array(current_pts, np.int32)], False, (0, 255, 255), 2)
 
-        # YOLO detection
-        results = model(inf, conf=CONF_THRESH, verbose=False)
-        detections = []
+        # ✅ YOLOv8 + ByteTrack
+        results = model.track(
+            inf,
+            conf=CONF_THRESH,
+            classes=[0],
+            tracker="bytetrack.yaml",
+            persist=True,
+            verbose=False
+        )
 
         if results and results[0].boxes:
-            for b in results[0].boxes:
-                x1, y1, x2, y2 = b.xyxy[0].tolist()
-                detections.append([
-                    int(x1 * sx), int(y1 * sy),
-                    int(x2 * sx), int(y2 * sy),
-                    float(b.conf[0])
-                ])
+            for box in results[0].boxes:
+                if box.id is None:
+                    continue
 
-        tracks = tracker.update(detections)
+                tid = int(box.id[0])
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                x1, x2 = int(x1 * sx), int(x2 * sx)
+                y1, y2 = int(y1 * sy), int(y2 * sy)
 
-        for t in tracks:
-            tid = t["id"]
-            x1, y1, x2, y2 = t["bbox"]
-            cx, cy = t["centroid"]
+                cx, cy = xyxy_to_centroid((x1, y1, x2, y2))
 
-            cv2.rectangle(display, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.circle(display, (cx, cy), 4, (255, 0, 0), -1)
+                cv2.rectangle(display, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                cv2.circle(display, (cx, cy), 4, (255, 0, 0), -1)
 
-            inside_now = set()
-            for z in zones:
-                zid = z["id"]
-                if point_in_poly((cx, cy), z["points"]):
-                    inside_now.add(zid)
-                    if zid not in last_inside[tid] and (tid, zid) not in counted:
-                        counts[zid] += 1
-                        counted.add((tid, zid))
-                        print(f"Counted person {tid} in Zone {zid}")
+                inside_now = set()
+                for z in zones:
+                    zid = z["id"]
+                    if point_in_poly((cx, cy), z["points"]):
+                        inside_now.add(zid)
+                        if zid not in last_inside[tid] and (tid, zid) not in counted:
+                            counts[zid] += 1
+                            counted.add((tid, zid))
+                            print(f"Counted person {tid} in Zone {zid}")
 
-            last_inside[tid] = inside_now
+                last_inside[tid] = inside_now
 
-            cv2.putText(display, f"ID {tid}", (x1, y1 - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                cv2.putText(display, f"ID {tid}", (x1, y1 - 5),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         y = 30
         for z in zones:
             cv2.putText(display, f"Zone {z['id']} Count: {counts[z['id']]}",
-                        (10, y),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                        (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
             y += 30
 
         cv2.imshow("Frame", display)
 
         k = cv2.waitKey(1) & 0xFF
-
         if k == ord('q'):
             break
-
         elif k == ord('z'):
             drawing = True
             editing_zone_id = None
             current_pts = []
-
         elif k == ord('e'):
-            try:
-                editing_zone_id = int(input("Enter Zone ID to edit: "))
-                drawing = True
-                current_pts = []
-            except ValueError:
-                print("Invalid ID")
-
+            editing_zone_id = int(input("Enter Zone ID to edit: "))
+            drawing = True
+            current_pts = []
         elif k == ord('d'):
-            try:
-                zid = int(input("Enter Zone ID to delete: "))
-                zones[:] = [z for z in zones if z["id"] != zid]
-                print(f"Zone {zid} deleted")
-            except ValueError:
-                print("Invalid ID")
-
+            zid = int(input("Enter Zone ID to delete: "))
+            zones[:] = [z for z in zones if z["id"] != zid]
         elif k == ord('n'):
             drawing = False
             if len(current_pts) >= 3:
@@ -252,13 +177,15 @@ q - quit
                     print(f"Zone {zid} added")
             current_pts = []
             editing_zone_id = None
-
         elif k == ord('s'):
             save_zones(zones)
 
     cap.release()
     cv2.destroyAllWindows()
-    print("Final counts:", dict(counts))
+    print("Final counts:")
+    for zid in sorted(counts.keys()):
+        print(f"Zone {zid}: {counts[zid]}")
+
 
 
 if __name__ == "__main__":
