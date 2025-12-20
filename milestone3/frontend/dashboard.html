@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Crowd Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <h2>Live Crowd Monitoring Dashboard</h2>
+  <div class="badge">Week 6</div>
+</div>
+
+<!-- DASHBOARD GRID -->
+<div class="dashboard">
+
+  <!-- LEFT: LINE GRAPH -->
+  <div class="panel">
+    <h3>Real-time Population Analytics</h3>
+    <canvas id="lineChart" height="140"></canvas>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+
+    <!-- ZONE OCCUPANCY -->
+    <div class="panel">
+      <h3>Zone Occupancy</h3>
+
+      <div class="zone">Main Entrance <span id="entrance">0</span></div>
+      <div class="zone">Retail Area <span id="retail">0</span></div>
+      <div class="zone">Food Court <span id="foodcourt">0</span></div>
+
+      <a class="download" href="http://127.0.0.1:5000/export/csv">Download CSV</a><br>
+      <a class="download" href="http://127.0.0.1:5000/export/pdf">Download PDF</a>
+    </div>
+
+    <!-- ACTIVITY HEATMAP -->
+    <div class="panel" style="margin-top:20px">
+      <h3>Activity Heatmap</h3>
+      <canvas id="heatmapChart" height="180"></canvas>
+
+      <div class="alert" id="alert">
+        ⚠ Food Court capacity approaching limit
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

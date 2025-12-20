@@ -1,0 +1,116 @@
+/* ---------- RESET ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- BODY ---------- */
+body {
+  background: linear-gradient(135deg, #071a33, #0c2b4f);
+  color: #ffffff;
+  padding: 24px;
+}
+
+/* ---------- HEADER ---------- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h2 {
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* ---------- GRID ---------- */
+.dashboard {
+  display: grid;
+  grid-template-columns: 2.8fr 1.2fr;
+  gap: 22px;
+}
+
+/* ---------- CARDS ---------- */
+.panel {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.panel h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+/* ---------- ZONE OCCUPANCY ---------- */
+.zone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.zone span {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* ---------- HEATMAP ---------- */
+.heatmap-box {
+  height: 230px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  margin-top: 10px;
+}
+
+/* ---------- ALERT ---------- */
+.alert {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255, 60, 60, 0.2);
+  color: #ffb3b3;
+  font-size: 14px;
+  display: none;
+}
+
+/* ---------- BUTTONS ---------- */
+a.download {
+  display: inline-block;
+  margin-top: 8px;
+  color: #00cfff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* ---------- FIX CHART INFINITE EXPANSION ---------- */
+.chart-box {
+  height: 300px;
+  width: 100%;
+  position: relative;
+}
+
+.chart-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
