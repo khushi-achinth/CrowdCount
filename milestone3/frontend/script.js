@@ -40,7 +40,7 @@ const heatmapChart = new Chart(heatmapCtx, {
     animation: false,
     scales: {
       x: { title: { display: true, text: "Time" } },
-      y: { title: { display: true, text: "Activity Level" }, beginAtZero: true }
+      y: { beginAtZero: true }
     }
   }
 });
@@ -48,49 +48,46 @@ const heatmapChart = new Chart(heatmapCtx, {
 
 /* ---------------- LIVE DATA FETCH ---------------- */
 
+const UPDATE_INTERVAL = 1000; // 🔥 1 second
+
 setInterval(() => {
   fetch("http://127.0.0.1:5000/dashboard_data", { cache: "no-store" })
     .then(res => res.json())
     .then(data => {
 
-      /* COUNTS */
-      document.getElementById("entrance").innerText = data.zones.entrance.count;
-      document.getElementById("retail").innerText = data.zones.retail.count;
-      document.getElementById("foodcourt").innerText = data.zones.foodcourt.count;
+      // COUNTS
+      entrance.innerText = data.zones.entrance.count;
+      retail.innerText = data.zones.retail.count;
+      foodcourt.innerText = data.zones.foodcourt.count;
 
-      /* LINE GRAPH (BACKEND DRIVEN) */
-      lineChart.data.labels = data.time;
-      lineChart.data.datasets[0].data = data.zones.entrance.history;
-      lineChart.data.datasets[1].data = data.zones.retail.history;
-      lineChart.data.datasets[2].data = data.zones.foodcourt.history;
-      lineChart.update();
+      // LINE GRAPH (SMOOTH, LIMITED HISTORY)
+      lineChart.data.labels = data.time.slice(-20);
+      lineChart.data.datasets[0].data = data.zones.entrance.history.slice(-20);
+      lineChart.data.datasets[1].data = data.zones.retail.history.slice(-20);
+      lineChart.data.datasets[2].data = data.zones.foodcourt.history.slice(-20);
+      lineChart.update("none");
 
-      /* HEATMAP (DERIVED FROM BACKEND HISTORY — KEY FIX) */
+      // HEATMAP (UNCHANGED LOGIC)
       heatmapChart.data.datasets[0].data =
-        data.zones.entrance.history.map((v, i) => ({
-          x: i,
-          y: v,
-          r: Math.min(20, v)
-        }));
-
+        data.zones.entrance.history.map((v,i)=>({x:i,y:v,r:Math.min(20,v)}));
       heatmapChart.data.datasets[1].data =
-        data.zones.retail.history.map((v, i) => ({
-          x: i,
-          y: v,
-          r: Math.min(20, v)
-        }));
-
+        data.zones.retail.history.map((v,i)=>({x:i,y:v,r:Math.min(20,v)}));
       heatmapChart.data.datasets[2].data =
-        data.zones.foodcourt.history.map((v, i) => ({
-          x: i,
-          y: v,
-          r: Math.min(20, v)
-        }));
+        data.zones.foodcourt.history.map((v,i)=>({x:i,y:v,r:Math.min(20,v)}));
+      heatmapChart.update("none");
 
-      heatmapChart.update();
+      // ZONE ALERTS
+      ["entrance","retail","foodcourt"].forEach(zone => {
+        const box = document.getElementById(`${zone}-alert`);
+        const msg = data.zones[zone].alert;
 
-      /* ALERT */
-      document.getElementById("alert").style.display =
-        data.zones.foodcourt.alert ? "block" : "none";
+        if (msg) {
+          box.innerText = "⚠ " + msg;
+          box.style.display = "block";
+        } else {
+          box.style.display = "none";
+        }
+      });
+
     });
-}, 3000);
+}, UPDATE_INTERVAL);

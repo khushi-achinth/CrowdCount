@@ -12,7 +12,7 @@
 <!-- HEADER -->
 <div class="header">
   <h2>Live Crowd Monitoring Dashboard</h2>
-  <div class="badge">Week 6</div>
+  
 </div>
 
 <!-- DASHBOARD GRID -->
@@ -31,9 +31,20 @@
     <div class="panel">
       <h3>Zone Occupancy</h3>
 
-      <div class="zone">Main Entrance <span id="entrance">0</span></div>
-      <div class="zone">Retail Area <span id="retail">0</span></div>
-      <div class="zone">Food Court <span id="foodcourt">0</span></div>
+      <div class="zone">
+        Main Entrance <span id="entrance">0</span>
+        <div class="alert" id="entrance-alert"></div>
+      </div>
+
+      <div class="zone">
+        Retail Area <span id="retail">0</span>
+        <div class="alert" id="retail-alert"></div>
+      </div>
+
+      <div class="zone">
+        Food Court <span id="foodcourt">0</span>
+        <div class="alert" id="foodcourt-alert"></div>
+      </div>
 
       <a class="download" href="http://127.0.0.1:5000/export/csv">Download CSV</a><br>
       <a class="download" href="http://127.0.0.1:5000/export/pdf">Download PDF</a>
@@ -41,9 +52,10 @@
 
     <!-- ACTIVITY HEATMAP -->
     <div class="panel" style="margin-top:20px">
-      <h3>Activity Heatmap</h3>
+      <h3>Activity Graph</h3>
       <canvas id="heatmapChart" height="180"></canvas>
 
+      <!-- Existing alert kept -->
       <div class="alert" id="alert">
         ⚠ Food Court capacity approaching limit
       </div>

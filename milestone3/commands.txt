@@ -1,0 +1,4 @@
+uv run backend/app.py
+uv run detectors/entrance_detector.py
+uv run detectors/retail_detector.py
+uv run detectors/foodcourt_detector.py
