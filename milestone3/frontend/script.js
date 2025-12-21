@@ -1,3 +1,5 @@
+console.log("PAGE LOADED", new Date().toLocaleTimeString());
+
 /* ---------------- LINE GRAPH ---------------- */
 
 const lineCtx = document.getElementById("lineChart").getContext("2d");
