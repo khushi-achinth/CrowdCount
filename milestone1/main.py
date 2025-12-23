@@ -1,7 +1,7 @@
 # main.py
 import cv2
-from milestone1.camera_feed import get_camera_frame
-from milestone1.zones import load_zones, save_zones, ZoneManager
+from camera_feed import get_camera_frame
+from zones import load_zones, save_zones, ZoneManager
 
 def main():
     window_name = "Webcam"

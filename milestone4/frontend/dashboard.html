@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  
-  <title>Live Crowd Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Live Crowd Monitoring Dashboard</title>
 
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,55 +10,51 @@
 
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <h2>Live Crowd Monitoring Dashboard</h2>
-  
 </div>
 
-<!-- DASHBOARD GRID -->
 <div class="dashboard">
 
-  <!-- LEFT: LINE GRAPH -->
+  <!-- LEFT : LINE GRAPH -->
   <div class="panel">
-    <h3>Real-time Population Analytics</h3>
-    <canvas id="lineChart" height="140"></canvas>
+    <h3>Real-time Crowd Trend</h3>
+    <div class="chart-box">
+      <canvas id="lineChart"></canvas>
+    </div>
   </div>
 
   <!-- RIGHT COLUMN -->
   <div>
 
-    <!-- ZONE OCCUPANCY -->
+    <!-- ZONE COUNTS -->
     <div class="panel">
       <h3>Zone Occupancy</h3>
 
       <div class="zone">
-        Main Entrance <span id="entrance">0</span>
+        Entrance <span id="entrance">0</span>
         <div class="alert" id="entrance-alert"></div>
       </div>
 
       <div class="zone">
-        Retail Area <span id="retail">0</span>
-        <div class="alert" id="retail-alert"></div>
+        Walk Path <span id="walkpath">0</span>
+        <div class="alert" id="walkpath-alert"></div>
       </div>
 
       <div class="zone">
-        Food Court <span id="foodcourt">0</span>
-        <div class="alert" id="foodcourt-alert"></div>
+        Exit <span id="exit">0</span>
+        <div class="alert" id="exit-alert"></div>
       </div>
 
       <a class="download" href="http://127.0.0.1:5000/export/csv">Download CSV</a><br>
       <a class="download" href="http://127.0.0.1:5000/export/pdf">Download PDF</a>
     </div>
 
-    <!-- ACTIVITY HEATMAP -->
+    <!-- BUBBLE GRAPH -->
     <div class="panel" style="margin-top:20px">
       <h3>Activity Bubble Graph</h3>
-      <canvas id="heatmapChart" height="180"></canvas>
-
-      <!-- Existing alert kept -->
-      <div class="alert" id="alert">
-        ⚠ Food Court capacity approaching limit
+      <div class="bubble-box">
+        <canvas id="bubbleChart"></canvas>
       </div>
     </div>
 

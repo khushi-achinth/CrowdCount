@@ -1,0 +1,96 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #071a33, #0c2b4f);
+  color: white;
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.header h2 {
+  font-size: 26px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 2.8fr 1.2fr;
+  gap: 22px;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.panel h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.zone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.08);
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.zone span {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.alert {
+  margin-top: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255,60,60,0.2);
+  color: #ffb3b3;
+  font-size: 13px;
+  display: none;
+}
+
+a.download {
+  display: inline-block;
+  margin-top: 8px;
+  color: #00cfff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* ---- FIXED CHART SIZES (IMPORTANT) ---- */
+
+.chart-box {
+  height: 420px;        /* Line graph height */
+  width: 100%;
+  position: relative;
+}
+
+.chart-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.bubble-box {
+  height: 320px;        /* Bubble graph height */
+  width: 100%;
+  position: relative;
+}
+
+.bubble-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
