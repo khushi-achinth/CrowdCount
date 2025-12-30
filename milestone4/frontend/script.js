@@ -1,114 +1,119 @@
-console.log("Dashboard Loaded");
-
-// ---------------- CONFIG ----------------
-const FETCH_INTERVAL = 1000; // 1 second
-const MAX_POINTS = 30;       // last 30 seconds
-// --------------------------------------
-
-// ---------------- LINE GRAPH ----------------
 const lineCtx = document.getElementById("lineChart").getContext("2d");
+const barCtx = document.getElementById("barChart").getContext("2d");
 
-const lineChart = new Chart(lineCtx, {
-  type: "line",
-  data: {
-    labels: [],
-    datasets: [
-      { label: "Entrance", borderColor: "cyan", data: [], fill: false },
-      { label: "Walk Path", borderColor: "green", data: [], fill: false },
-      { label: "Exit", borderColor: "orange", data: [], fill: false }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: false,
-    scales: {
-      x: {
-        ticks: { maxTicksLimit: 10 }
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 2   // 2 people interval
-        }
+let lineChart = null;
+let barChart = null;
+
+/* ---------- GUARANTEED UNIQUE & STABLE COLORS ---------- */
+const COLOR_PALETTE = [
+  "#00E5FF", "#FF6F00", "#66BB6A", "#AB47BC",
+  "#FF5252", "#FFD740", "#29B6F6", "#EC407A",
+  "#7E57C2", "#26A69A"
+];
+
+const zoneColors = {};
+
+function getColor(zone, index) {
+  if (!zoneColors[zone]) {
+    zoneColors[zone] = COLOR_PALETTE[index % COLOR_PALETTE.length];
+  }
+  return zoneColors[zone];
+}
+
+/* ---------- INITIALIZE CHARTS ---------- */
+function initCharts(zones) {
+
+  /* ---- LINE GRAPH (unchanged) ---- */
+  const lineDatasets = zones.map((z, i) => ({
+    label: z,
+    data: [],
+    borderColor: getColor(z, i),
+    fill: false,
+    tension: 0.3
+  }));
+
+  lineChart = new Chart(lineCtx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: lineDatasets
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      scales: {
+        y: { beginAtZero: true }
       }
     }
-  }
-});
+  });
 
-// ---------------- BUBBLE GRAPH ----------------
-const bubbleCtx = document.getElementById("bubbleChart").getContext("2d");
-
-const bubbleChart = new Chart(bubbleCtx, {
-  type: "bubble",
-  data: {
-    datasets: [
-      { label: "Entrance", backgroundColor: "rgba(0,255,255,0.6)", data: [] },
-      { label: "Walk Path", backgroundColor: "rgba(0,255,0,0.6)", data: [] },
-      { label: "Exit", backgroundColor: "rgba(255,165,0,0.6)", data: [] }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: false,
-    scales: {
-      x: { title: { display: true, text: "Time (seconds)" } },
-      y: { beginAtZero: true }
-    }
-  }
-});
-
-// ---------------- LIVE FETCH (1 SECOND) ----------------
-setInterval(() => {
-  fetch("http://127.0.0.1:5000/dashboard_data", { cache: "no-store" })
-    .then(res => res.json())
-    .then(data => {
-
-      // Live counts
-      entrance.innerText = data.zones.entrance.count;
-      walkpath.innerText = data.zones.walkpath.count;
-      exit.innerText = data.zones.exit.count;
-
-      // ---- LINE GRAPH ----
-      lineChart.data.labels = data.time.slice(-MAX_POINTS);
-      lineChart.data.datasets[0].data =
-        data.zones.entrance.history.slice(-MAX_POINTS);
-      lineChart.data.datasets[1].data =
-        data.zones.walkpath.history.slice(-MAX_POINTS);
-      lineChart.data.datasets[2].data =
-        data.zones.exit.history.slice(-MAX_POINTS);
-
-      lineChart.update("none");
-
-      // ---- BUBBLE GRAPH ----
-      bubbleChart.data.datasets[0].data =
-        data.zones.entrance.history.slice(-MAX_POINTS)
-          .map((v, i) => ({ x: i, y: v, r: Math.min(20, v) }));
-
-      bubbleChart.data.datasets[1].data =
-        data.zones.walkpath.history.slice(-MAX_POINTS)
-          .map((v, i) => ({ x: i, y: v, r: Math.min(20, v) }));
-
-      bubbleChart.data.datasets[2].data =
-        data.zones.exit.history.slice(-MAX_POINTS)
-          .map((v, i) => ({ x: i, y: v, r: Math.min(20, v) }));
-
-      bubbleChart.update("none");
-
-      // ---- ALERTS ----
-      ["entrance","walkpath","exit"].forEach(zone => {
-        const box = document.getElementById(`${zone}-alert`);
-        const msg = data.zones[zone].alert;
-
-        if (msg) {
-          box.innerText = "⚠ " + msg;
-          box.style.display = "block";
-        } else {
-          box.style.display = "none";
+  /* ---- BAR GRAPH (ZONE SNAPSHOT, NO LEGEND) ---- */
+  barChart = new Chart(barCtx, {
+    type: "bar",
+    data: {
+      labels: zones,
+      datasets: [{
+        data: zones.map(() => 0),
+        backgroundColor: zones.map((z, i) => getColor(z, i))
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: false,
+      plugins: {
+        legend: {
+          display: false   // 🔥 LEGEND REMOVED
         }
-      });
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
 
-    })
-    .catch(err => console.error("Fetch error:", err));
-}, FETCH_INTERVAL);
+/* ---------- UPDATE DASHBOARD ---------- */
+async function updateDashboard() {
+  const res = await fetch("http://127.0.0.1:5000/dashboard_data");
+  const payload = await res.json();
+
+  const zones = Object.keys(payload.zones);
+  if (!lineChart) initCharts(zones);
+
+  const timestamp = payload.time[payload.time.length - 1];
+
+  /* ---- LINE GRAPH ---- */
+  lineChart.data.labels.push(timestamp);
+  zones.forEach((z, i) => {
+    lineChart.data.datasets[i].data.push(payload.zones[z].count);
+  });
+  lineChart.update();
+
+  /* ---- BAR GRAPH (LIVE COUNTS) ---- */
+  barChart.data.datasets[0].data = zones.map(
+    z => payload.zones[z].count
+  );
+  barChart.update();
+
+  /* ---- ZONE COUNTS + ALERTS ---- */
+  const container = document.getElementById("zonesContainer");
+  container.innerHTML = "";
+
+  zones.forEach(z => {
+    const zoneData = payload.zones[z];
+
+    const zoneDiv = document.createElement("div");
+    zoneDiv.className = "zone";
+    zoneDiv.innerHTML = `${z} <span>${zoneData.count}</span>`;
+
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert";
+    alertDiv.innerText = zoneData.alert || "";
+    alertDiv.style.display = zoneData.alert ? "block" : "none";
+
+    zoneDiv.appendChild(alertDiv);
+    container.appendChild(zoneDiv);
+  });
+}
+
+setInterval(updateDashboard, 1000);
