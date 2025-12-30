@@ -284,6 +284,7 @@ async function loadZoneList() {
 
     const renameBtn = document.createElement("button");
     renameBtn.innerText = "Rename";
+    renameBtn.style.marginRight = "12px";   // ✅ spacing
     renameBtn.onclick = async () => {
       const newName = prompt("New zone name:", z.name);
       if (!newName) return;
@@ -296,6 +297,7 @@ async function loadZoneList() {
 
     const thresholdBtn = document.createElement("button");
     thresholdBtn.innerText = "Edit Threshold";
+    thresholdBtn.style.marginRight = "12px"; // ✅ spacing
     thresholdBtn.onclick = async () => {
       const t = prompt("New threshold:", z.threshold);
       if (!t) return;
@@ -308,6 +310,7 @@ async function loadZoneList() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.innerText = "Delete";
+    // ❌ no margin on last button (clean edge)
     deleteBtn.onclick = async () => {
       if (!confirm(`Delete ${z.name}?`)) return;
       await authFetch(`${API_BASE}/zones/delete/${z.id}`, {
@@ -399,4 +402,3 @@ function downloadPDF() {
   })
   .catch(err => alert(err.message));
 }
-

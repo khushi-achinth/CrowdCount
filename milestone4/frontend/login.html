@@ -1,22 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Login</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div class="panel" style="max-width:400px;margin:100px auto">
-  <h3>Login</h3>
+  <!-- 🔹 APP TITLE -->
+  <h1 class="app-title">CrowdCount</h1>
 
-  <input id="username" placeholder="Username" /><br><br>
-  <input id="password" type="password" placeholder="Password" /><br><br>
+  <div class="panel">
+    <h3>Login</h3>
 
-  <button onclick="login()">Login</button>
+    <input type="text" id="username" placeholder="Username" />
+    <br /><br />
+    <input type="password" id="password" placeholder="Password" />
+    <br /><br />
+    <button onclick="login()">Login</button>
+  </div>
 
-  <p id="error" style="color:red"></p>
-</div>
-
-<script src="login.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>

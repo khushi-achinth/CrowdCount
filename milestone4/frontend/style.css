@@ -54,20 +54,23 @@ body {
   font-weight: 600;
 }
 
-.alert {
-  padding: 6px 10px;
-  border-radius: 8px;
-  background: rgba(255,60,60,0.2);
-  color: #ffb3b3;
-  font-size: 13px;
-  display: none;
+/* ================= 🔥 GUARANTEED BUTTON SPACING FIX ================= */
+
+/*
+  JS injects buttons with no whitespace:
+  <button>A</button><button>B</button><button>C</button>
+
+  ONLY fix: make buttons inline-block + add margin INSIDE flow
+*/
+
+#zoneList .zone button {
+  display: inline-block !important;
+  margin-right: 14px !important;
 }
 
-.zone .alert {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
+/* Remove extra space after last button */
+#zoneList .zone button:last-child {
+  margin-right: 0 !important;
 }
 
 /* ================= CHARTS ================= */
@@ -108,14 +111,6 @@ body {
   cursor: pointer;
 }
 
-.export-panel button:first-child::before {
-  content: "📄 ";
-}
-
-.export-panel button:last-child::before {
-  content: "📑 ";
-}
-
 /* ================= ZONE FRAME ================= */
 
 .zone-frame {
@@ -139,30 +134,24 @@ body {
 
 body:has(#username) {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
 
-.panel input {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: none;
-  outline: none;
-  font-size: 15px;
+.app-title {
+  text-align: center;
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  color: #cfe8ff;
+  text-shadow: 0 0 12px rgba(120, 180, 255, 0.6);
 }
 
-body:has(#username) .panel button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
-  color: white;
+body:has(#username) .panel {
+  width: 360px;
+  max-width: 90%;
 }
 
 /* ================= GENERAL BUTTONS ================= */
@@ -177,37 +166,29 @@ button {
   cursor: pointer;
 }
 
-/* ================= ADMIN ZONE CONTROLS ================= */
+/* ================= ADMIN COLORS ================= */
 
-#zoneManagementPanel button {
-  width: auto;
-  min-width: 120px;
-  padding: 10px 18px;
-  margin: 6px 8px;
-  border-radius: 10px;
+#zoneManagementPanel button:nth-of-type(1) {
+  background: #b3e5fc;
+  color: #000;
 }
 
-/* ✅ CENTER ONLY THE ACTION BUTTON ROW (NOT ALL DIVS) */
-#zoneManagementPanel .zone-frame + div {
-  text-align: center;
+#zoneManagementPanel button:nth-of-type(2) {
+  background: #c8f7c5;
+  color: #000;
 }
 
-/* ================= EXISTING ZONES LIST (FIXED) ================= */
-
-#zoneList {
-  display: block;
-  width: 100%;
-  margin-top: 12px;
+#zoneManagementPanel button:nth-of-type(3) {
+  background: #ffe0b2;
+  color: #000;
 }
 
-#zoneList .zone {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+#zoneList button {
+  background: #d1c4e9;
+  color: #000;
 }
 
-#zoneList .zone button {
-  width: auto;
-  padding: 6px 12px;
-  margin-left: 8px;
+#zoneList button:last-child {
+  background: #ffcdd2;
+  color: #000;
 }
