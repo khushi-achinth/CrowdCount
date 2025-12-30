@@ -353,3 +353,50 @@ function saveZoneWithNormalization(zonePayload) {
     points: normalizeZonePoints(zonePayload.points)
   };
 }
+
+function downloadCSV() {
+  fetch("http://127.0.0.1:5000/export/csv", {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    }
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Download failed");
+    return res.blob();
+  })
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "crowd_data.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  })
+  .catch(err => alert(err.message));
+}
+
+function downloadPDF() {
+  fetch("http://127.0.0.1:5000/export/pdf", {
+    headers: {
+      "Authorization": "Bearer " + localStorage.getItem("token")
+    }
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Download failed");
+    return res.blob();
+  })
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "crowd_report.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  })
+  .catch(err => alert(err.message));
+}
+

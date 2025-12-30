@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import json
 import os
@@ -13,6 +13,8 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ZONES_FILE = os.path.join(BASE_DIR, "detector", "zones.json")
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+CSV_FILE = os.path.join(LOG_DIR, "crowd_data.csv")
 
 # ---------------- LOGIN ----------------
 @app.route("/login", methods=["POST"])
@@ -45,17 +47,22 @@ def dashboard_data():
     return jsonify(data)
 
 
-# ---------------- EXPORTS ----------------
+# ---------------- EXPORT PDF ----------------
 @app.route("/export/pdf")
 @token_required(required_role="admin")
 def export_pdf():
-    return generate_pdf()
+    pdf_path = generate_pdf()
+    return send_file(pdf_path, as_attachment=True)
 
 
+# ---------------- EXPORT CSV ----------------
 @app.route("/export/csv")
 @token_required(required_role="admin")
 def export_csv():
-    return jsonify({"message": "CSV already generated"})
+    if not os.path.exists(CSV_FILE):
+        return jsonify({"error": "CSV file not found"}), 404
+
+    return send_file(CSV_FILE, as_attachment=True)
 
 
 # ---------------- GET ZONES ----------------
