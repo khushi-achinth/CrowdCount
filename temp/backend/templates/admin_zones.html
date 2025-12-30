@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Zone Management</title>
+
+  <style>
+    #video-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    #video {
+      display: block;
+    }
+
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      cursor: crosshair;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>Admin – Zone Management</h2>
+
+<div id="video-container">
+  <video id="video" autoplay muted loop playsinline>
+    <source src="{{ url_for('static', filename='video.mp4') }}" type="video/mp4">
+  </video>
+  <canvas id="canvas"></canvas>
+</div>
+
+<br><br>
+<button onclick="startDraw()">Start Drawing</button>
+<button onclick="saveZone()">Save Zone</button>
+
+<script src="{{ url_for('static', filename='admin_zones.js') }}"></script>
+
+</body>
+</html>

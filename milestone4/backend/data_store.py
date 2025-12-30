@@ -23,21 +23,24 @@ _last_csv_time = 0
 def update(zone, count):
     global _last_csv_time
 
+    thresholds = get_thresholds()
+    threshold = thresholds.get(zone, 20)
+
+    # ---- INIT ZONE IF NEW ----
     if zone not in data["zones"]:
         data["zones"][zone] = {
             "count": 0,
             "history": [],
+            "threshold": threshold,   # ✅ CORRECTLY ATTACHED
             "alert": ""
         }
 
+    # ---- UPDATE COUNT ----
     data["zones"][zone]["count"] = count
     data["zones"][zone]["history"].append(count)
     data["time"].append(time.strftime("%H:%M:%S"))
 
     # ---- ALERT LOGIC (UNCHANGED SEMANTICS) ----
-    thresholds = get_thresholds()
-    threshold = thresholds.get(zone, 20)
-
     if count >= threshold:
         data["zones"][zone]["alert"] = "Overcrowded"
     elif count >= threshold - WARNING_OFFSET:

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Crowd Monitoring Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>Live Crowd Monitoring Dashboard</h2>
+</div>
+
+<div class="dashboard">
+
+  <!-- LEFT : LINE GRAPH -->
+  <div class="panel">
+    <h3>Real-time Crowd Trend</h3>
+    <div class="chart-box">
+      <canvas id="lineChart"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+
+    <!-- ZONE COUNTS (DYNAMIC) -->
+    <div class="panel">
+      <h3>Zone Occupancy</h3>
+
+      <!-- JS will inject zones here -->
+      <div id="zoneContainer"></div>
+
+      <a class="download" href="http://127.0.0.1:5000/export/csv">Download CSV</a><br>
+      <a class="download" href="http://127.0.0.1:5000/export/pdf">Download PDF</a>
+    </div>
+
+    <!-- BUBBLE GRAPH -->
+    <div class="panel" style="margin-top:20px">
+      <h3>Activity Bubble Graph</h3>
+      <div class="bubble-box">
+        <canvas id="bubbleChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

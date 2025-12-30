@@ -2,7 +2,7 @@ import json
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ZONES_FILE = os.path.join(BASE_DIR, "zones.json")
+ZONES_FILE = os.path.join(BASE_DIR, "detector/zones.json")
 
 DEFAULT_THRESHOLD = 20
 WARNING_OFFSET = 3

@@ -1,0 +1,6 @@
+{
+  "1": { "name": "Entrance", "threshold": 20 },
+  "2": { "name": "Walk Path", "threshold": 20 },
+  "3": { "name": "Exit", "threshold": 20 },
+  "4": { "name": "Main", "threshold": 20 }
+}

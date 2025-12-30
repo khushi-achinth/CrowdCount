@@ -1,50 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Live Crowd Monitoring Dashboard</title>
-
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
-<div class="header">
+<!-- TOP BAR -->
+<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px;">
   <h2>Live Crowd Monitoring Dashboard</h2>
+  <button onclick="logout()">Logout</button>
 </div>
+
+<h3 style="text-align: center; padding: 20px;">Dashboard</h3>
 
 <div class="dashboard">
 
-  <!-- LEFT : LINE GRAPH -->
+  <!-- LINE GRAPH -->
   <div class="panel">
-    <h3>Real-time Crowd Trend (Line)</h3>
-    <div class="chart-box">
-      <canvas id="lineChart"></canvas>
+    <h3>Real-time Crowd Trend</h3>
+    <canvas id="lineChart"></canvas>
+  </div>
+
+  <!-- ZONE OCCUPANCY -->
+  <div class="panel">
+    <h3>Zone Occupancy</h3>
+    <div id="zonesContainer"></div>
+  </div>
+
+  <!-- BAR GRAPH -->
+  <div class="panel">
+    <h3>Bar Chart</h3>
+    <canvas id="barChart"></canvas>
+  </div>
+
+  <!-- ADMIN ONLY: EXPORT -->
+  <h3 id="exportHeading" style="text-align: center;">Export Data</h3>
+  <div class="panel">
+    <div id="exportSection" class="export-panel">
+      <button onclick="downloadCSV()">Download CSV</button>
+      <button onclick="downloadPDF()">Download PDF</button>
     </div>
   </div>
 
-  <!-- RIGHT COLUMN -->
-  <div>
-
-    <!-- ZONE COUNTS -->
-    <div class="panel">
-      <h3>Zone Occupancy</h3>
-      <div id="zonesContainer"></div>
-
-      <a class="download" href="http://127.0.0.1:5000/export/csv">Download CSV</a><br>
-      <a class="download" href="http://127.0.0.1:5000/export/pdf">Download PDF</a>
-    </div>
-
-    <!-- BAR GRAPH -->
-    <div class="panel" style="margin-top:20px">
-      <h3>Bar Graph</h3>
-      <div class="bubble-box">
-        <canvas id="barChart"></canvas>
-      </div>
-    </div>
-
+  <!-- ANALYTICS -->
+  <h3 style="text-align: center;">Analytics</h3>
+  <div class="panel">
+    <h3>Zone Analytics</h3>
+    <div id="analyticsContainer"></div>
   </div>
+
+  <!-- ADMIN ONLY: ZONE MANAGEMENT -->
+  <h3 id="zoneMgmtHeading" style="text-align: center;">Admin Zone Management</h3>
+  <div class="panel" id="zoneManagementPanel" style="display:none;">
+    <h3>Zone Management</h3>
+
+    <!-- Static Frame Image -->
+    <div class="zone-frame">
+      <img src="frame.jpg" alt="Static Frame for Zone Drawing">
+    </div>
+
+    <!-- Controls -->
+    <div style="margin-bottom:10px;">
+      <button disabled>Draw Zone</button>
+      <button disabled>Save Zone</button>
+      <button disabled>Cancel</button>
+    </div>
+
+    <!-- Zone List -->
+    <h4>Existing Zones</h4>
+    <div id="zoneList"></div>
+  </div>
+
 </div>
 
 <script src="script.js"></script>

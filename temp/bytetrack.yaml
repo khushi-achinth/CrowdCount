@@ -1,0 +1,20 @@
+# ByteTrack configuration for crowd counting
+
+tracker_type: bytetrack
+
+track_high_thresh: 0.6
+track_low_thresh: 0.1
+new_track_thresh: 0.7
+
+track_buffer: 30
+
+match_thresh: 0.8
+
+frame_rate: 30
+
+# Aspect ratio filtering
+aspect_ratio_thresh: 1.6
+min_box_area: 10
+
+# Re-identification is not used in ByteTrack
+mot20: False
