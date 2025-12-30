@@ -8,13 +8,35 @@
 </head>
 <body>
 
+<!-- SIDE NAV -->
+<div id="sideNav">
+  <h2 class="side-title">CrowdCount</h2>
+
+  <button class="nav-btn" onclick="scrollToSection('dashboardSection', this)">
+    Dashboard
+  </button>
+
+
+  <button class="nav-btn admin-only" onclick="scrollToSection('exportHeading', this)">
+    Export Data
+  </button>
+
+  <button class="nav-btn" onclick="scrollToSection('analyticsSection', this)">
+    Analytics
+  </button>
+
+  <button class="nav-btn admin-only" onclick="scrollToSection('zoneMgmtHeading', this)">
+    Zone Management
+  </button>
+</div>
+
 <!-- TOP BAR -->
 <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px;">
   <h2>Live Crowd Monitoring Dashboard</h2>
   <button onclick="logout()">Logout</button>
 </div>
 
-<h3 style="text-align: center; padding: 20px;">Dashboard</h3>
+<h3 style="text-align: center; padding: 20px;" id="dashboardSection">Dashboard</h3>
 
 <div class="dashboard">
 
@@ -46,7 +68,7 @@
   </div>
 
   <!-- ANALYTICS -->
-  <h3 style="text-align: center;">Analytics</h3>
+  <h3 style="text-align: center;" id="analyticsSection">Analytics</h3>
   <div class="panel">
     <h3>Zone Analytics</h3>
     <div id="analyticsContainer"></div>
@@ -57,19 +79,16 @@
   <div class="panel" id="zoneManagementPanel" style="display:none;">
     <h3>Zone Management</h3>
 
-    <!-- Static Frame Image -->
     <div class="zone-frame">
       <img src="frame.jpg" alt="Static Frame for Zone Drawing">
     </div>
 
-    <!-- Controls -->
-    <div style="margin-bottom:10px;">
+    <div class="zone-controls">
       <button disabled>Draw Zone</button>
       <button disabled>Save Zone</button>
       <button disabled>Cancel</button>
     </div>
 
-    <!-- Zone List -->
     <h4>Existing Zones</h4>
     <div id="zoneList"></div>
   </div>

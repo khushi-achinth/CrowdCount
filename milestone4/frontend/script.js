@@ -25,6 +25,55 @@ function authFetch(url, options = {}) {
   });
 }
 
+/* ================= SIDE NAV SCROLL ================= */
+
+function scrollToSection(id, btn) {
+  const section = document.getElementById(id);
+  if (!section) return;
+
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  document.querySelectorAll(".nav-btn").forEach(b =>
+    b.classList.remove("active")
+  );
+
+  btn.classList.add("active");
+}
+
+/* ================= ROLE BASED SIDE NAV ================= */
+
+if (role !== "admin") {
+  document.querySelectorAll(".admin-only").forEach(el => {
+    el.style.display = "none";
+  });
+}
+
+/* ⚠️ ALL EXISTING DASHBOARD LOGIC BELOW THIS LINE REMAINS UNCHANGED */
+
+
+if (!token) {
+  alert("Session expired. Please login again.");
+  window.location.replace("login.html");
+}
+
+/* ---------- LOGOUT ---------- */
+function logout() {
+  localStorage.clear();
+  window.location.replace("login.html");
+}
+
+/* ---------- AUTH FETCH ---------- */
+function authFetch(url, options = {}) {
+  return fetch(url, {
+    ...options,
+    headers: {
+      "Authorization": "Bearer " + token,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+}
+
 /* ---------- ROLE-BASED UI ---------- */
 if (role !== "admin") {
   ["exportSection", "exportHeading", "zoneMgmtHeading", "zoneManagementPanel"]
@@ -401,4 +450,22 @@ function downloadPDF() {
     window.URL.revokeObjectURL(url);
   })
   .catch(err => alert(err.message));
+}
+function scrollToSection(id, btn) {
+  const section = document.getElementById(id);
+  if (!section) return;
+
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  document.querySelectorAll(".nav-btn").forEach(b => {
+    b.classList.remove("active");
+  });
+
+  btn.classList.add("active");
+}
+
+
+if (role !== "admin") {
+  document.getElementById("exportNavBtn").style.display = "none";
+  document.getElementById("zoneNavBtn").style.display = "none";
 }
