@@ -26,24 +26,16 @@ function authFetch(url, options = {}) {
 }
 
 /* ---------- ROLE-BASED UI ---------- */
-/* ---------- ROLE-BASED UI ---------- */
 if (role !== "admin") {
-  const exportSection = document.getElementById("exportSection");
-  const exportHeading = document.getElementById("exportHeading");
-  const zoneMgmtHeading = document.getElementById("zoneMgmtHeading");
-  const zonePanel = document.getElementById("zoneManagementPanel");
-
-  if (exportSection) exportSection.style.display = "none";
-  if (exportHeading) exportHeading.style.display = "none";
-  if (zoneMgmtHeading) zoneMgmtHeading.style.display = "none";
-  if (zonePanel) zonePanel.style.display = "none";
-
+  ["exportSection", "exportHeading", "zoneMgmtHeading", "zoneManagementPanel"]
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = "none";
+    });
 } else {
   const zonePanel = document.getElementById("zoneManagementPanel");
   if (zonePanel) zonePanel.style.display = "block";
 }
-
-
 
 /* ---------- CHART SETUP ---------- */
 const lineCtx = document.getElementById("lineChart").getContext("2d");
@@ -125,6 +117,7 @@ async function updateDashboard() {
       a.innerText = zd.alert;
       a.style.display = "block";
       el.appendChild(a);
+
     }
     zoneDiv.appendChild(el);
   });
@@ -158,41 +151,33 @@ async function updateDashboard() {
   });
 }
 
-/* ---------- EXPORTS ---------- */
-function downloadCSV() {
-  window.open(`${API_BASE}/export/csv`, "_blank");
-}
-function downloadPDF() {
-  window.open(`${API_BASE}/export/pdf`, "_blank");
-}
-
 setInterval(updateDashboard, 1000);
 
 /* ============================================================
-   =============== PHASE 4A + 4B — ZONE DRAWING ===============
+   =============== ZONE DRAWING ===============================
    ============================================================ */
 
 if (role === "admin") {
   initZoneDrawing();
+  loadZoneList();
 }
 
 function initZoneDrawing() {
   const panel = document.getElementById("zoneManagementPanel");
+  if (!panel) return;
 
-  const frame = panel.querySelector("div[style*='height']");
-  const controls = panel.querySelectorAll("div")[1];
-  const buttons = controls.querySelectorAll("button");
+  const frame = panel.querySelector(".zone-frame");
+  if (!frame) return;
 
+  const buttons = panel.querySelectorAll("button");
   const drawBtn = buttons[0];
   const saveBtn = buttons[1];
   const cancelBtn = buttons[2];
 
-  // ✅ ENABLE DRAW BUTTON
   drawBtn.disabled = false;
   saveBtn.disabled = true;
   cancelBtn.disabled = false;
 
-  /* Canvas overlay */
   const canvas = document.createElement("canvas");
   canvas.width = frame.clientWidth;
   canvas.height = frame.clientHeight;
@@ -223,7 +208,7 @@ function initZoneDrawing() {
     saveBtn.disabled = true;
   };
 
-  canvas.addEventListener("click", (e) => {
+  canvas.addEventListener("click", e => {
     if (!drawing) return;
     const r = canvas.getBoundingClientRect();
     points.push({ x: e.clientX - r.left, y: e.clientY - r.top });
@@ -239,31 +224,22 @@ function initZoneDrawing() {
 
   saveBtn.onclick = async () => {
     const name = prompt("Enter zone name:");
-    if (!name) return;
-
     const threshold = prompt("Enter threshold:");
-    if (!threshold) return;
+    if (!name || !threshold) return;
 
     const flatPoints = points.flatMap(p => [
       Math.round(p.x),
       Math.round(p.y)
     ]);
 
-    const res = await authFetch(`${API_BASE}/zones/add`, {
+    await authFetch(`${API_BASE}/zones/add`, {
       method: "POST",
-      body: JSON.stringify({
-        name,
-        threshold,
-        points: flatPoints
-      })
+      body: JSON.stringify({ name, threshold, points: flatPoints })
     });
 
-    const result = await res.json();
-    alert(result.message || "Zone saved. Restart system to apply.");
-
+    alert("Zone saved. Restart system to apply.");
     saveBtn.disabled = true;
     loadZoneList();
-
   };
 
   function redraw(close = false) {
@@ -304,19 +280,18 @@ async function loadZoneList() {
     row.style.borderBottom = "1px solid #ccc";
     row.style.padding = "8px";
 
+    row.innerHTML = `<b>${z.name}</b><br>Threshold: ${z.threshold}<br>`;
+
     const renameBtn = document.createElement("button");
     renameBtn.innerText = "Rename";
     renameBtn.onclick = async () => {
       const newName = prompt("New zone name:", z.name);
       if (!newName) return;
-
       await authFetch(`${API_BASE}/zones/update`, {
         method: "PUT",
         body: JSON.stringify({ id: z.id, name: newName })
       });
-
       loadZoneList();
-      alert("Renamed. Restart system to apply.");
     };
 
     const thresholdBtn = document.createElement("button");
@@ -324,37 +299,57 @@ async function loadZoneList() {
     thresholdBtn.onclick = async () => {
       const t = prompt("New threshold:", z.threshold);
       if (!t) return;
-
       await authFetch(`${API_BASE}/zones/update`, {
         method: "PUT",
         body: JSON.stringify({ id: z.id, threshold: t })
       });
-
       loadZoneList();
-      alert("Threshold updated. Restart system to apply.");
     };
 
     const deleteBtn = document.createElement("button");
     deleteBtn.innerText = "Delete";
     deleteBtn.onclick = async () => {
-      if (!confirm(`Delete zone "${z.name}"?`)) return;
-
+      if (!confirm(`Delete ${z.name}?`)) return;
       await authFetch(`${API_BASE}/zones/delete/${z.id}`, {
         method: "DELETE"
       });
-
       loadZoneList();
-      alert("Zone deleted. Restart system to apply.");
     };
 
-    row.innerHTML = `<b>${z.name}</b><br>Threshold: ${z.threshold}<br>`;
     row.append(renameBtn, thresholdBtn, deleteBtn);
     list.appendChild(row);
   });
 }
+/************************************************************
+ * ADDITIVE PATCH — ZONE COORDINATE NORMALIZATION
+ * (Does NOT modify any existing feature)
+ ************************************************************/
 
-/* call once on load */
-if (role === "admin") {
-  loadZoneList();
+/**
+ * Convert raw pixel points (drawn on frame.jpg)
+ * into normalized [0–1] coordinates
+ */
+function normalizeZonePoints(rawPoints) {
+  const img = document.querySelector(".zone-frame img");
+  if (!img) return rawPoints; // safety fallback
+
+  const w = img.clientWidth;
+  const h = img.clientHeight;
+
+  return rawPoints.map((v, i) =>
+    i % 2 === 0
+      ? +(v / w).toFixed(6)   // x
+      : +(v / h).toFixed(6)   // y
+  );
 }
 
+/**
+ * Wrapper to be used ONLY when saving a zone
+ * Existing draw logic remains untouched
+ */
+function saveZoneWithNormalization(zonePayload) {
+  return {
+    ...zonePayload,
+    points: normalizeZonePoints(zonePayload.points)
+  };
+}

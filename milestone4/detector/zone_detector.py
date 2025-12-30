@@ -17,19 +17,39 @@ YELLOW = (0, 255, 255)
 GREEN = (0, 255, 0)
 
 
-def load_zones():
+def load_zones(frame_shape):
+    h, w = frame_shape[:2]
+
     with open(ZONES_JSON, "r") as f:
         raw = json.load(f)["zones"]
 
     zones = []
     for z in raw:
-        pts = list(zip(z["points"][::2], z["points"][1::2]))
+        pts = []
+
+        for i in range(0, len(z["points"]), 2):
+            x = z["points"][i]
+            y = z["points"][i + 1]
+
+            # 🔒 BACKWARD COMPATIBILITY
+            # If values are >1, assume pixel coordinates
+            if x > 1 or y > 1:
+                px, py = int(x), int(y)
+            else:
+                px = int(x * w)
+                py = int(y * h)
+
+            pts.append((px, py))
+
         zones.append({
             "id": z["id"],
             "name": z["name"],
             "points": pts
         })
+
     return zones
+
+
 
 
 def centroid(box):
@@ -47,11 +67,17 @@ def point_inside(pt, poly):
 
 def main():
     model = YOLO(YOLO_MODEL)
-    zones = load_zones()
 
     cap = cv2.VideoCapture(VIDEO_PATH)
     if not cap.isOpened():
         return
+
+    # ---- READ ONE FRAME FOR ZONE SCALING (ADDITIVE) ----
+    ret, frame = cap.read()
+    if not ret:
+        return
+
+    zones = load_zones(frame.shape)
 
     counts = defaultdict(int)
     last_inside = defaultdict(set)
@@ -111,8 +137,10 @@ def main():
                 last_inside[tid] = inside_now
 
         heatmap = cv2.GaussianBlur(heatmap, (0, 0), 25)
-        heatmap_norm = cv2.normalize(heatmap, None, 0, 255,
-                                     cv2.NORM_MINMAX).astype(np.uint8)
+        heatmap_norm = cv2.normalize(
+            heatmap, None, 0, 255, cv2.NORM_MINMAX
+        ).astype(np.uint8)
+
         heatmap_color = cv2.applyColorMap(heatmap_norm, cv2.COLORMAP_JET)
         display = cv2.addWeighted(display, 0.6, heatmap_color, 0.4, 0)
 
@@ -129,6 +157,7 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@
     {
       "id": 2,
       "name": "Walk Path",
-      "threshold": 15,
+      "threshold": 20,
       "points": [
         698,
         59,
